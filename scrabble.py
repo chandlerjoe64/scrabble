@@ -13,7 +13,7 @@ def placeTile(coordinates, character):
 	if coordinates[1] > (gameSize - 1):
 		return
 	#check if tile is already populated
-	if tiles[coordinates[0]][coordinates[1]][3] != None:
+	if tiles[coordinates[0]][coordinates[1]][4] != False:
 		return
 	#update tile
 	tiles[coordinates[0]][coordinates[1]][3] = selectedTile
@@ -97,7 +97,10 @@ def undoPlacedTiles():
 	for x in range(gameSize):
 		for y in range(gameSize):
 			#check if tile is due to be cleared
-			if tiles[x][y][3] != '' and not tiles[x][y][4] :
+			if tiles[x][y][3] != None and not tiles[x][y][4] :
+				#clear tile value
+				tiles[x][y][3] = None
+				#redraw game board
 				#center
 				if x==7 and y==7:
 					tileColor = pink
@@ -126,6 +129,16 @@ def undoPlacedTiles():
 
 			pygame.draw.rect(screen, color, pygame.Rect(((blockSize * (4+i)),((gameSize*blockSize) + int(blockSize * .5)),(blockSize-2),(blockSize-2))))
 			screen.blit(font.render(character, True, (0,0,0)), (((blockSize * (4+i)) + xOffset), ((gameSize*blockSize) + int(blockSize * .5)) + yOffset))
+
+def finalizePlacedTiles():
+	#TODO check for play validity
+	#set tiles to locked
+	for x in range(gameSize):
+		for y in range(gameSize):
+			if tiles[x][y][3] != None:
+				tiles[x][y][4] = True
+	#replenish player tiles
+	setupPlayerTiles()
 
 
 
@@ -193,7 +206,10 @@ while not done:
 			selectedTile = selectTile(getCoordinate(pygame.mouse.get_pos()))
 
 		if event.type == pygame.KEYUP:
-			undoPlacedTiles()
+			if event.key == pygame.K_ESCAPE:
+				undoPlacedTiles()
+			if event.key == pygame.K_RETURN:
+				finalizePlacedTiles()
 
 
 	pygame.display.flip()
