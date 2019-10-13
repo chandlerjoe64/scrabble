@@ -2,6 +2,14 @@ import pygame
 import string
 import random
 
+#TODOS
+#drawing new letters from pool after turn
+#checking for play validity before finalizing turn
+#calculating points of turns
+#implement blank tiles
+#handle empty letter bag on player tile draws
+
+
 #function definitions
 def getCoordinate(mousePosition):
 	#convert mouse coordinates into gameboard coordinates
@@ -83,7 +91,7 @@ def setupBoard():
 def setupPlayerTiles():
 	color = brown
 	for x in range(7):
-		character = random.choice(string.ascii_uppercase)
+		character = letterBag.pop()
 		xOffset = (blockSize - font.size(character)[0]) / 2
 		yOffset = (blockSize - font.size(character)[1]) / 2
 
@@ -140,7 +148,18 @@ def finalizePlacedTiles():
 	#replenish player tiles
 	setupPlayerTiles()
 
+def fillLetterBag():
+	#unshuffled letter list
+	letterBag = []
+	#populate list according to official distributions
+	i = 0
+	for letter in string.ascii_uppercase:
+		for iteration in range(letterDistributions[i]):
+			letterBag.append(letter)
+		i += 1
+	random.shuffle(letterBag)
 
+	return letterBag
 
 
 
@@ -164,6 +183,8 @@ gray = (128, 128,128)
 #game parameters
 gameSize = 15
 blockSize = 50
+letterDistributions = [9,2,2,4,12,2,3,2,9,1,1,4,2,6,8,2,1,6,4,6,4,2,2,1,2,1]
+pointDistributions= [1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10]
 
 #modified tile coordinates
 doubleWords = [(1,1),(2,2),(3,3),(4,4),(10,10),(11,11),(12,12),(13,13),(13,1),(12,2),(11,3),(10,4),(4,10),(3,11),(2,12),(1,13)]
@@ -175,16 +196,16 @@ tripleLetters = [(1,5),(1,9),(5,1),(5,5),(5,9),(5,13),(9,1),(9,5),(9,9),(9,13),(
 screen = pygame.display.set_mode(((gameSize*blockSize), ((gameSize + 2)*blockSize)))
 screen.fill(white)
 
-#tiles
+#game setup
+setupBoard()
+letterBag = fillLetterBag()
+
 #modifier standard --> (letter multiplier, word multiplier)
 tiles = [[0 for x in range(gameSize)] for y in range(gameSize)]
 setupTiles(tiles)
 
 playerTiles = [0 for x in range(7)]
 setupPlayerTiles()
-
-#game setup
-setupBoard()
 
 
 
