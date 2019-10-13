@@ -3,7 +3,6 @@ import string
 import random
 
 #TODOS
-#drawing new letters from pool after turn
 #checking for play validity before finalizing turn
 #calculating points of turns
 #implement blank tiles
@@ -16,15 +15,18 @@ def getCoordinate(mousePosition):
 	x,y = int((float(mousePosition[0]) / float(gameSize * blockSize)) * float(gameSize)),int((float(mousePosition[1]) / float(gameSize * blockSize)) * float(gameSize)) 
 	return (x,y)
 
-def placeTile(coordinates, character):
+def placeTile(coordinates, playerTileIndex):
 	#check if cursor is in valid location for placement
 	if coordinates[1] > (gameSize - 1):
 		return
 	#check if tile is already populated
 	if tiles[coordinates[0]][coordinates[1]][4] != False:
 		return
+	character = playerTiles[playerTileIndex][0]
+	#update player tile
+	playerTiles[playerTileIndex][1] = True
 	#update tile
-	tiles[coordinates[0]][coordinates[1]][3] = selectedTile
+	tiles[coordinates[0]][coordinates[1]][3] = character
 	#repaint tile
 	pygame.draw.rect(screen, brown, pygame.Rect(((coordinates[0]*blockSize)+1),(coordinates[1]*blockSize),(blockSize-2),(blockSize-2)))
 	#place letter
@@ -32,7 +34,7 @@ def placeTile(coordinates, character):
 	yOffset = (blockSize - font.size(character)[1]) / 2
 	screen.blit(font.render(character, True, (0,0,0)), (((coordinates[0] * blockSize) + xOffset), ((coordinates[1] * blockSize)) + yOffset))
 	#gray out placed player tiles
-	pygame.draw.rect(screen, gray, pygame.Rect(((blockSize * (4+selectedTile)),((gameSize*blockSize) + int(blockSize * .5)),(blockSize-2),(blockSize-2))))
+	pygame.draw.rect(screen, gray, pygame.Rect(((blockSize * (4+playerTileIndex)),((gameSize*blockSize) + int(blockSize * .5)),(blockSize-2),(blockSize-2))))
 
 def selectTile(coordinates):
 	#check if cursor is in valid location for selection #TODO improve bounds indentification here
@@ -97,7 +99,7 @@ def setupPlayerTiles():
 
 		pygame.draw.rect(screen, color, pygame.Rect(((blockSize * (4+x)),((gameSize*blockSize) + int(blockSize * .5)),(blockSize-2),(blockSize-2))))
 		screen.blit(font.render(character, True, (0,0,0)), (((blockSize * (4+x)) + xOffset), ((gameSize*blockSize) + int(blockSize * .5)) + yOffset))
-		playerTiles[x] = character
+		playerTiles[x] = [character,False]
 
 def undoPlacedTiles():
 	color = brown
@@ -131,7 +133,7 @@ def undoPlacedTiles():
 	#replace tiles in playerTiles
 	for tile in playerTiles:
 		for i in range(7):
-			character = playerTiles[i]
+			character = playerTiles[i][0]
 			xOffset = (blockSize - font.size(character)[0]) / 2
 			yOffset = (blockSize - font.size(character)[1]) / 2
 
@@ -146,7 +148,17 @@ def finalizePlacedTiles():
 			if tiles[x][y][3] != None:
 				tiles[x][y][4] = True
 	#replenish player tiles
-	setupPlayerTiles()
+	for index in range(len(playerTiles)):
+		if playerTiles[index][1] == True:
+			#reset player tile values
+			playerTiles[index][0] = letterBag.pop()
+			playerTiles[index][1] = False
+			#redraw player tile
+			xOffset = (blockSize - font.size(playerTiles[index][0])[0]) / 2
+			yOffset = (blockSize - font.size(playerTiles[index][0])[1]) / 2
+			pygame.draw.rect(screen, brown, pygame.Rect(((blockSize * (4+index)),((gameSize*blockSize) + int(blockSize * .5)),(blockSize-2),(blockSize-2))))
+			screen.blit(font.render(playerTiles[index][0], True, (0,0,0)), (((blockSize * (4+index)) + xOffset), ((gameSize*blockSize) + int(blockSize * .5)) + yOffset))
+
 
 def fillLetterBag():
 	#unshuffled letter list
@@ -223,7 +235,7 @@ while not done:
 			done = True
 		if event.type == pygame.MOUSEBUTTONUP:
 			if selectedTile != '':
-				placeTile(getCoordinate(pygame.mouse.get_pos()), playerTiles[selectedTile])
+				placeTile(getCoordinate(pygame.mouse.get_pos()), selectedTile)
 			selectedTile = selectTile(getCoordinate(pygame.mouse.get_pos()))
 
 		if event.type == pygame.KEYUP:
