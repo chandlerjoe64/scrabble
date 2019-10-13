@@ -7,6 +7,8 @@ import random
 #calculating points of turns
 #implement blank tiles
 #handle empty letter bag on player tile draws
+#add text for multiplier squares
+#swap tiles
 
 
 #function definitions
@@ -142,6 +144,7 @@ def undoPlacedTiles():
 
 def finalizePlacedTiles():
 	#TODO check for play validity
+	checkValidity()
 	#set tiles to locked
 	for x in range(gameSize):
 		for y in range(gameSize):
@@ -159,7 +162,6 @@ def finalizePlacedTiles():
 			pygame.draw.rect(screen, brown, pygame.Rect(((blockSize * (4+index)),((gameSize*blockSize) + int(blockSize * .5)),(blockSize-2),(blockSize-2))))
 			screen.blit(font.render(playerTiles[index][0], True, (0,0,0)), (((blockSize * (4+index)) + xOffset), ((gameSize*blockSize) + int(blockSize * .5)) + yOffset))
 
-
 def fillLetterBag():
 	#unshuffled letter list
 	letterBag = []
@@ -172,6 +174,45 @@ def fillLetterBag():
 	random.shuffle(letterBag)
 
 	return letterBag
+
+def checkValidity():
+	#rules
+	#new tiles placed in one direction
+	#new tiles connected
+
+	#word
+	#in dictionary
+	#left/right, top/bottom
+
+	#list of created words
+	
+	#go all the way left of placed tiles, then all the way right to create word
+	#go all the way up from placed tiles, then all the day down to created word
+
+	#iterate over all tiles and get placed tiles
+	placedTiles = []
+	for x in range(gameSize):
+		for y in range(gameSize):
+			if tiles[x][y][3] != None and not tiles[x][y][4]:
+				placedTiles.append([x,y])
+	#check 'linearity'
+	for tile in placedTiles:
+		print("%d,%d" % (tile[0], tile[1]))
+	#get L/R words
+	# for tile in placedTiles:
+	# 	head = tile
+	# 	while tiles[head[0]-1][head[1]][3] != None:
+	# 		head[0] -= 1
+	# 	word = []
+	# 	while tiles[head[0]][head[1]][3] != None:
+	# 		word.append(tiles[head[0]][head[1]][3])
+	# 		head[0] += 1
+	# 	print word
+	#get U/D words
+
+
+
+
 
 
 
