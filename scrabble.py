@@ -1,6 +1,7 @@
 import pygame
 import string
 import random
+from copy import deepcopy
 
 #TODOS
 #checking for play validity before finalizing turn
@@ -9,7 +10,8 @@ import random
 #handle empty letter bag on player tile draws
 #add text for multiplier squares
 #swap tiles
-#ensure all plays touch already-placed tile
+#implement second player
+#implement game-over when out of tiles or out of plays
 
 
 #function definitions
@@ -24,6 +26,9 @@ def placeTile(coordinates, playerTileIndex):
 		return
 	#check if tile is already populated
 	if tiles[coordinates[0]][coordinates[1]][3] != None:
+		return
+	#check if player tile is valid (end-game scenarios)
+	if playerTiles[playerTileIndex][1]:
 		return
 	character = playerTiles[playerTileIndex][0]
 	#update player tile
@@ -154,6 +159,10 @@ def finalizePlacedTiles():
 				tiles[x][y][4] = True
 	#replenish player tiles
 	for index in range(len(playerTiles)):
+		#don't replenish if letterbag is empty
+		if len(letterBag) == 0:
+			#TODO clear empty player tile slots of values
+			break
 		if playerTiles[index][1] == True:
 			#reset player tile values
 			playerTiles[index][0] = letterBag.pop()
@@ -229,35 +238,61 @@ def checkValidity():
 				undoPlacedTiles()
 				return False 
 
-
+	#get list of words created by play, and check that play is touching a locked tile
 	#get L/R words
 	includesLocked = False
+	words = []	#list of all words from play
+	lastFound = []	#head of previously recorded word to avoid duplicates in list
 	for tile in placedTiles:
-		head = tile
+		head = deepcopy(tile)	#deepcopy to avoid passing by reference
 		while tiles[head[0]-1][head[1]][3] != None:
+			if head[0] == 0:
+				break
 			head[0] -= 1
+		if head == lastFound:	#if head is the same as previously added word, continue for loop
+			continue
+		lastFound = deepcopy(head)	#record new head value
 		word = []
 		while tiles[head[0]][head[1]][3] != None:
 			if tiles[head[0]][head[1]][4] == True:	#check if play is touching a locked tile
-				print "locked tile found"
 				includesLocked = True
 			word.append(tiles[head[0]][head[1]][3])
+			if head[0] == (gameSize - 1):
+				break
 			head[0] += 1
-		print word
+		if len(word) > 1:
+			words.append(word)
 	#get U/D words
+	lastFound = []
 	for tile in placedTiles:
-		head = tile
+		head = deepcopy(tile)
 		while tiles[head[0]][head[1]-1][3] != None:
-			head[0] -= 1
+			if head[1] == 0:
+				break
+			head[1] -= 1
+		if head == lastFound:	#if head is the same as previously added word, continue for loop
+			continue
+		lastFound = deepcopy(head)	#record new head value
 		word = []
 		while tiles[head[0]][head[1]][3] != None:
 			if tiles[head[0]][head[1]][4] == True:	#check if play is touching a locked tile
-				print "locked tile found"
 				includesLocked = True
 			word.append(tiles[head[0]][head[1]][3])
+			if head[1] == (gameSize - 1):
+				break
 			head[1] += 1
-		print word
+		if len(word) > 1:
+			words.append(word)
 
+	#if locked tile isn't found on any play but the first, invalid move
+	if tiles[7][7][4] and not includesLocked:
+		undoPlacedTiles()
+		return False 
+
+	#print all words from play
+	print words
+
+	#return true if all validation checks are passed			
 	return True
 
 
