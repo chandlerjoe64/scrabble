@@ -14,6 +14,8 @@ from copy import deepcopy
 #implement second player
 #implement game-over when out of tiles or out of plays
 #descriptive messages on invalid plays
+#display turn and total scores
+#change tile modifiers after a successful play
 
 
 #function definitions
@@ -236,10 +238,13 @@ def checkValidity():
 				undoPlacedTiles()
 				return False 
 
-	#get list of words created by play, and check that play is touching a locked tile
-	#get L/R words
+	#get list of words created by play, calculate potential score, and check that play is touching a locked tile
 	includesLocked = False
 	words = []	#list of all words from play
+	turnScore = 0
+	tmpScore = 0
+	wordMod = 0
+	#get L/R words
 	lastFound = []	#head of previously recorded word to avoid duplicates in list
 	for tile in placedTiles:
 		head = deepcopy(tile)	#deepcopy to avoid passing by reference
@@ -249,6 +254,10 @@ def checkValidity():
 			head[0] -= 1
 		if head == lastFound:	#if head is the same as previously added word, continue for loop
 			continue
+
+		#calculate word score
+		print calculateScore(deepcopy(head),1)
+
 		lastFound = deepcopy(head)	#record new head value
 		word = []
 		while tiles[head[0]][head[1]][3] != None:
@@ -270,6 +279,10 @@ def checkValidity():
 			head[1] -= 1
 		if head == lastFound:	#if head is the same as previously added word, continue for loop
 			continue
+
+		#calculate word score
+		print calculateScore(deepcopy(head),0)
+
 		lastFound = deepcopy(head)	#record new head value
 		word = []
 		while tiles[head[0]][head[1]][3] != None:
@@ -290,18 +303,18 @@ def checkValidity():
 	#print all words from play
 	if not checkDictionary(words):
 		print "FAILED"
-		undoPlacedTiles()
-		return False
+		#undoPlacedTiles()
+		#return False
 
 	#return true if all validation checks are passed			
 	return True
 
 def checkDictionary(words):
+	#TODO more efficient search algorithm?
 	for word in words:
 		dictionary.seek(0)	#reset file header
 		word = "".join(word).lower() + '\n'
 		valid = False
-		print "checking ", word
 		for line in dictionary:
 			if line == word:
 				valid = True
@@ -313,6 +326,52 @@ def checkDictionary(words):
 	return True
 
 
+def calculateScore(head, linearity):
+	def getLetterValue(letter):
+		if letter in ['A','E','I','L','N','O','R','S','T','U']:
+			return 1
+		elif letter in ['D','G']:
+			return 2
+		elif letter in ['B','C','M','P']:
+			return 3
+		elif letter in ['F','H','V','W','Y']:
+			return 4
+		elif letter in ['K']:
+			return 5
+		elif letter in ['J','X']:
+			return 8
+		elif letter in ['Q','Z']:
+			return 10
+
+	wordScore = 0
+	wordMod = 1
+	wordSize = 0
+	#linearity 1 = l/r, 0 = u/d
+	if linearity:
+		while tiles[head[0]][head[1]][3] != None:
+			#get tile score
+			wordScore += getLetterValue(tiles[head[0]][head[1]][3]) * tiles[head[0]][head[1]][2][0]
+			if tiles[head[0]][head[1]][2][1] != 1:
+				wordMod += tiles[head[0]][head[1]][2][1]
+			if head[0] == (gameSize - 1):
+				break
+			wordSize += 1
+			head[0] += 1
+		if wordSize > 1:
+			return wordScore * wordMod
+	else:
+		while tiles[head[0]][head[1]][3] != None:
+			#get tile score
+			wordScore += getLetterValue(tiles[head[0]][head[1]][3]) * tiles[head[0]][head[1]][2][0]
+			if tiles[head[0]][head[1]][2][1] != 1:
+				wordMod += tiles[head[0]][head[1]][2][1]
+			if head[1] == (gameSize - 1):
+				break
+			wordSize += 1
+			head[1] += 1
+		if wordSize > 1:
+			return wordScore * wordMod
+		
 
 
 
