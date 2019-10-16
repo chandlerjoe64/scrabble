@@ -10,8 +10,10 @@ from copy import deepcopy
 #handle empty letter bag on player tile draws
 #add text for multiplier squares
 #swap tiles
+#pass play
 #implement second player
 #implement game-over when out of tiles or out of plays
+#descriptive messages on invalid plays
 
 
 #function definitions
@@ -140,6 +142,9 @@ def undoPlacedTiles():
 				pygame.draw.rect(screen, tileColor, pygame.Rect(((x*blockSize)+1),(y*blockSize),(blockSize-2),(blockSize-2)))
 	#replace tiles in playerTiles
 	for tile in playerTiles:
+		#reset placed value
+		tile[1] = False
+		#redraw
 		for i in range(7):
 			character = playerTiles[i][0]
 			xOffset = (blockSize - font.size(character)[0]) / 2
@@ -187,12 +192,6 @@ def fillLetterBag():
 	return letterBag
 
 def checkValidity():
-	#rules
-	#new tiles connected
-	#in dictionary
-	#left/right, top/bottom
-	
-
 	#iterate over all tiles and get placed tiles
 	placedTiles = []
 	for x in range(gameSize):
@@ -202,7 +201,6 @@ def checkValidity():
 
 	#check if center tile is populated
 	if tiles[7][7][3] == None:
-		print "first play"
 		undoPlacedTiles()
 		return False
 
@@ -290,15 +288,29 @@ def checkValidity():
 		return False 
 
 	#print all words from play
-	checkDictionary(words)
+	if not checkDictionary(words):
+		print "FAILED"
+		undoPlacedTiles()
+		return False
 
 	#return true if all validation checks are passed			
 	return True
 
 def checkDictionary(words):
 	for word in words:
-		word = "".join(word)
-		print word
+		dictionary.seek(0)	#reset file header
+		word = "".join(word).lower() + '\n'
+		valid = False
+		print "checking ", word
+		for line in dictionary:
+			if line == word:
+				valid = True
+				break
+
+		if not valid:
+			return False
+
+	return True
 
 
 
@@ -329,6 +341,7 @@ gameSize = 15
 blockSize = 50
 letterDistributions = [9,2,2,4,12,2,3,2,9,1,1,4,2,6,8,2,1,6,4,6,4,2,2,1,2,1]
 pointDistributions= [1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10]
+dictionary = file('dictionary.txt')
 
 #modified tile coordinates
 doubleWords = [(1,1),(2,2),(3,3),(4,4),(10,10),(11,11),(12,12),(13,13),(13,1),(12,2),(11,3),(10,4),(4,10),(3,11),(2,12),(1,13)]
