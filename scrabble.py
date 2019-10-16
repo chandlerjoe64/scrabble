@@ -9,6 +9,7 @@ import random
 #handle empty letter bag on player tile draws
 #add text for multiplier squares
 #swap tiles
+#ensure all plays touch already-placed tile
 
 
 #function definitions
@@ -22,7 +23,7 @@ def placeTile(coordinates, playerTileIndex):
 	if coordinates[1] > (gameSize - 1):
 		return
 	#check if tile is already populated
-	if tiles[coordinates[0]][coordinates[1]][4] != False:
+	if tiles[coordinates[0]][coordinates[1]][3] != None:
 		return
 	character = playerTiles[playerTileIndex][0]
 	#update player tile
@@ -143,8 +144,9 @@ def undoPlacedTiles():
 			screen.blit(font.render(character, True, (0,0,0)), (((blockSize * (4+i)) + xOffset), ((gameSize*blockSize) + int(blockSize * .5)) + yOffset))
 
 def finalizePlacedTiles():
-	#TODO check for play validity
-	checkValidity()
+	#check for play validity
+	if not checkValidity():
+		return 	#if play is invalid, halt execution of finalizing play
 	#set tiles to locked
 	for x in range(gameSize):
 		for y in range(gameSize):
@@ -177,17 +179,10 @@ def fillLetterBag():
 
 def checkValidity():
 	#rules
-	#new tiles placed in one direction
 	#new tiles connected
-
-	#word
 	#in dictionary
 	#left/right, top/bottom
-
-	#list of created words
 	
-	#go all the way left of placed tiles, then all the way right to create word
-	#go all the way up from placed tiles, then all the day down to created word
 
 	#iterate over all tiles and get placed tiles
 	placedTiles = []
@@ -195,20 +190,75 @@ def checkValidity():
 		for y in range(gameSize):
 			if tiles[x][y][3] != None and not tiles[x][y][4]:
 				placedTiles.append([x,y])
+
+	#check if center tile is populated
+	if tiles[7][7][3] == None:
+		print "first play"
+		undoPlacedTiles()
+		return False
+
 	#check 'linearity'
+	xShift = False
+	yShift = False
 	for tile in placedTiles:
-		print("%d,%d" % (tile[0], tile[1]))
+		if placedTiles[0][0] != tile[0]:
+			xShift = True
+		if placedTiles[0][1] != tile[1]:
+			yShift = True
+	#if there is shift in both directions, it fails linearity check
+	if xShift and yShift:
+		undoPlacedTiles()
+		return False
+	
+
+	#ensure all played tiles are connected
+	if xShift:	#check L/R
+		tilesConnected = True
+		yIndex = placedTiles[0][1]
+		for xIndex in range(placedTiles[0][0],(placedTiles[-1][0] + 1)):
+			if tiles[xIndex][yIndex][3] == None:
+				#if there is a blank tile between placed tiles, fails 'tiles connected' test
+				undoPlacedTiles()
+				return False 
+	if yShift:	#check U/D
+		tilesConnected = True
+		xIndex = placedTiles[0][0]
+		for yIndex in range(placedTiles[0][1],(placedTiles[-1][1] + 1)):
+			if tiles[xIndex][yIndex][3] == None:
+				#if there is a blank tile between placed tiles, fails 'tiles connected' test
+				undoPlacedTiles()
+				return False 
+
+
 	#get L/R words
-	# for tile in placedTiles:
-	# 	head = tile
-	# 	while tiles[head[0]-1][head[1]][3] != None:
-	# 		head[0] -= 1
-	# 	word = []
-	# 	while tiles[head[0]][head[1]][3] != None:
-	# 		word.append(tiles[head[0]][head[1]][3])
-	# 		head[0] += 1
-	# 	print word
+	includesLocked = False
+	for tile in placedTiles:
+		head = tile
+		while tiles[head[0]-1][head[1]][3] != None:
+			head[0] -= 1
+		word = []
+		while tiles[head[0]][head[1]][3] != None:
+			if tiles[head[0]][head[1]][4] == True:	#check if play is touching a locked tile
+				print "locked tile found"
+				includesLocked = True
+			word.append(tiles[head[0]][head[1]][3])
+			head[0] += 1
+		print word
 	#get U/D words
+	for tile in placedTiles:
+		head = tile
+		while tiles[head[0]][head[1]-1][3] != None:
+			head[0] -= 1
+		word = []
+		while tiles[head[0]][head[1]][3] != None:
+			if tiles[head[0]][head[1]][4] == True:	#check if play is touching a locked tile
+				print "locked tile found"
+				includesLocked = True
+			word.append(tiles[head[0]][head[1]][3])
+			head[1] += 1
+		print word
+
+	return True
 
 
 
