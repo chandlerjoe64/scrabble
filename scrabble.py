@@ -290,10 +290,16 @@ def checkValidity():
 		return False 
 
 	#print all words from play
-	print words
+	checkDictionary(words)
 
 	#return true if all validation checks are passed			
 	return True
+
+def checkDictionary(words):
+	for word in words:
+		word = "".join(word)
+		print word
+
 
 
 
