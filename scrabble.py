@@ -325,7 +325,6 @@ def checkDictionary(words):
 
 	return True
 
-
 def calculateScore(head, linearity):
 	def getLetterValue(letter):
 		if letter in ['A','E','I','L','N','O','R','S','T','U']:
