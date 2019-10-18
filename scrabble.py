@@ -380,14 +380,6 @@ def calculateScore(head, linearity):
 
 
 
-
-#one-time initlializers
-pygame.init()
-done = False
-selectedTile = ''
-clock = pygame.time.Clock()
-font = pygame.font.SysFont('Arial', 50)
-
 #color definitions
 white = (255,255,255)
 beige = (253, 245, 230)
@@ -404,6 +396,13 @@ blockSize = 50
 letterDistributions = [9,2,2,4,12,2,3,2,9,1,1,4,2,6,8,2,1,6,4,6,4,2,2,1,2,1]
 pointDistributions= [1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10]
 dictionary = file('dictionary.txt')
+
+#one-time initlializers
+pygame.init()
+done = False
+selectedTile = ''
+clock = pygame.time.Clock()
+font = pygame.font.SysFont('Arial', blockSize)
 
 #modified tile coordinates
 doubleWords = [(1,1),(2,2),(3,3),(4,4),(10,10),(11,11),(12,12),(13,13),(13,1),(12,2),(11,3),(10,4),(4,10),(3,11),(2,12),(1,13)]
