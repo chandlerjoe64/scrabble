@@ -16,6 +16,8 @@ from copy import deepcopy
 #descriptive messages on invalid plays
 #display turn and total scores
 #change tile modifiers after a successful play
+#single tile play invalid on first turn
+#implement logging feature for plays/failures
 
 
 #function definitions
@@ -102,6 +104,30 @@ def setupBoard():
 
 			pygame.draw.rect(screen, tileColor, pygame.Rect(((x*blockSize)+1),(y*blockSize),(blockSize-2),(blockSize-2)))
 
+def updateScore(turnScore,gameScore):
+	#clear previous blits
+	pygame.draw.rect(screen, white, pygame.Rect(((blockSize * 11),(gameSize*blockSize),(blockSize * 4),(blockSize * 2))))
+
+	#Turn
+	xOffset = (blockSize - font.size(str(turnScore))[0]) / 2
+	yOffset = (blockSize - font.size(str(turnScore))[1]) / 2
+
+	screen.blit(font.render(str(turnScore), True, (0,0,0)),((blockSize * 12) + xOffset, (gameSize*blockSize) + yOffset))
+
+	xOffsetSub = (blockSize - subFont.size("Turn")[0]) / 2
+	yOffsetSub = (blockSize - subFont.size("Turn")[1]) / 2
+	screen.blit(subFont.render("Turn", True, red),((blockSize * 14) + xOffsetSub, (gameSize*blockSize) + yOffsetSub))
+
+	#Game
+	xOffset = (blockSize - font.size(str(gameScore))[0]) / 2
+	yOffset = (blockSize - font.size(str(gameScore))[1]) / 2
+
+	screen.blit(font.render(str(gameScore), True, (0,0,0)),((blockSize * 12) + xOffset, ((gameSize + 1)*blockSize) + yOffset))
+
+	xOffsetSub = (blockSize - subFont.size("Game")[0]) / 2
+	yOffsetSub = (blockSize - subFont.size("Game")[1]) / 2
+	screen.blit(subFont.render("Game", True, red),((blockSize * 14) + xOffsetSub, ((gameSize + 1)*blockSize) + yOffsetSub))
+
 def setupPlayerTiles():
 	color = brown
 	for x in range(7):
@@ -159,6 +185,10 @@ def finalizePlacedTiles():
 	#check for play validity
 	if not checkValidity():
 		return 	#if play is invalid, halt execution of finalizing play
+	#update scores
+	global gameScore
+	gameScore += turnScore
+	updateScore(turnScore, gameScore)
 	#set tiles to locked
 	for x in range(gameSize):
 		for y in range(gameSize):
@@ -179,6 +209,8 @@ def finalizePlacedTiles():
 			yOffset = (blockSize - font.size(playerTiles[index][0])[1]) / 2
 			pygame.draw.rect(screen, brown, pygame.Rect(((blockSize * (4+index)),((gameSize*blockSize) + int(blockSize * .5)),(blockSize-2),(blockSize-2))))
 			screen.blit(font.render(playerTiles[index][0], True, (0,0,0)), (((blockSize * (4+index)) + xOffset), ((gameSize*blockSize) + int(blockSize * .5)) + yOffset))
+	#updated scoreboard
+	updateScore(turnScore, gameScore)
 
 def fillLetterBag():
 	#unshuffled letter list
@@ -241,8 +273,8 @@ def checkValidity():
 	#get list of words created by play, calculate potential score, and check that play is touching a locked tile
 	includesLocked = False
 	words = []	#list of all words from play
+	global turnScore
 	turnScore = 0
-	tmpScore = 0
 	wordMod = 0
 	#get L/R words
 	lastFound = []	#head of previously recorded word to avoid duplicates in list
@@ -256,7 +288,7 @@ def checkValidity():
 			continue
 
 		#calculate word score
-		print calculateScore(deepcopy(head),1)
+		turnScore += calculateScore(deepcopy(head),1)
 
 		lastFound = deepcopy(head)	#record new head value
 		word = []
@@ -281,7 +313,7 @@ def checkValidity():
 			continue
 
 		#calculate word score
-		print calculateScore(deepcopy(head),0)
+		turnScore += calculateScore(deepcopy(head),0)
 
 		lastFound = deepcopy(head)	#record new head value
 		word = []
@@ -302,9 +334,8 @@ def checkValidity():
 
 	#print all words from play
 	if not checkDictionary(words):
-		print "FAILED"
-		#undoPlacedTiles()
-		#return False
+		undoPlacedTiles()
+		return False
 
 	#return true if all validation checks are passed			
 	return True
@@ -360,6 +391,8 @@ def calculateScore(head, linearity):
 			if wordMod ==0:
 				wordMod = 1
 			return wordScore * wordMod
+		else:
+			return 0
 	else:
 		while tiles[head[0]][head[1]][3] != None:
 			#get tile score
@@ -374,6 +407,8 @@ def calculateScore(head, linearity):
 			if wordMod ==0:
 				wordMod = 1
 			return wordScore * wordMod
+		else:
+			return 0
 		
 
 
@@ -388,6 +423,7 @@ red = (255,51,51)
 lightBlue = (153,204,255)
 darkBue = (51,153,255)
 brown = (160,80,45)
+red = (255,0,0)
 gray = (128, 128,128)
 
 #game parameters
@@ -403,6 +439,9 @@ done = False
 selectedTile = ''
 clock = pygame.time.Clock()
 font = pygame.font.SysFont('Arial', blockSize)
+subFont = pygame.font.SysFont('Arial', blockSize / 2)
+gameScore = 0
+turnScore = 0
 
 #modified tile coordinates
 doubleWords = [(1,1),(2,2),(3,3),(4,4),(10,10),(11,11),(12,12),(13,13),(13,1),(12,2),(11,3),(10,4),(4,10),(3,11),(2,12),(1,13)]
