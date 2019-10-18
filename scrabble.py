@@ -417,7 +417,7 @@ def calculateScore(head, linearity):
 		
 
 
-
+#
 
 
 #color definitions
