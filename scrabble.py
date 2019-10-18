@@ -12,7 +12,6 @@ from copy import deepcopy
 #implement second player
 #implement game-over when out of tiles or out of plays
 #descriptive messages on invalid plays
-#display turn and total scores
 #change tile modifiers after a successful play
 #implement logging feature for plays/failures
 
@@ -199,7 +198,10 @@ def finalizePlacedTiles():
 			break
 		if playerTiles[index][1] == True:
 			#reset player tile values
-			playerTiles[index][0] = letterBag.pop()
+			try:
+				playerTiles[index][0] = letterBag.pop()
+			except:
+				print "OUT OF TILES"
 			playerTiles[index][1] = False
 			#redraw player tile
 			xOffset = (blockSize - font.size(playerTiles[index][0])[0]) / 2
@@ -411,6 +413,7 @@ def calculateScore(head, linearity):
 			return wordScore * wordMod
 		else:
 			return 0
+
 		
 
 
