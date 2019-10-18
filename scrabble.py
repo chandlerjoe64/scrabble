@@ -1,5 +1,6 @@
 import pygame
 import string
+import time
 import random
 from copy import deepcopy
 
@@ -336,7 +337,7 @@ def checkValidity():
 		undoPlacedTiles()
 		return False
 
-	#print all words from play
+	#check dictionary
 	if not checkDictionary(words):
 		undoPlacedTiles()
 		return False
@@ -414,10 +415,48 @@ def calculateScore(head, linearity):
 		else:
 			return 0
 
+def playAtRandom():
+	#Random number of tiles
+	random.seed()
+	head = (random.randint(0,gameSize-1), random.randint(0,gameSize-1))
+	placementDirection = random.randint(0,1)
+
+	playerTilesToUse = []
+	for i in range(7):
+		playerTilesToUse.append(i + 1)
+	random.shuffle(playerTilesToUse)
+
+	for i in range(random.randint(0,6)):
+		playerTilesToUse.pop(-1)
+	# print playerTilesToUse
+
+	j = 0
+	if placementDirection:
+		#place L/R
+		for i in playerTilesToUse:
+			try:
+				placeTile((head[0] + j,head[1]), i)
+				#print "Getting playerTile at index ",  i, " and placing at index (", head[0] + j, ",", head[1], ")" 
+			except:
+				break
+			j += 1
+	else:
+		#place U/D
+		for i in playerTilesToUse:
+			try:
+				placeTile((head[0],head[1] + j), i)
+				#print "Getting playerTile at index ",  i, " and placing at index (", head[0] + j, ",", head[1], ")" 
+			except:
+				break
+			j += 1
+
+	# pygame.display.flip()
+	finalizePlacedTiles()
+
 		
 
 
-#
+
 
 
 #color definitions
@@ -472,28 +511,30 @@ setupPlayerTiles()
 
 
 
-#scratch work before moving to functions
-
-
-
-
-
+executions = 0
 #game loop
 while not done:
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			done = True
-		if event.type == pygame.MOUSEBUTTONUP:
-			if selectedTile != '':
-				placeTile(getCoordinate(pygame.mouse.get_pos()), selectedTile)
-			selectedTile = selectTile(getCoordinate(pygame.mouse.get_pos()))
-
-		if event.type == pygame.KEYUP:
-			if event.key == pygame.K_ESCAPE:
-				undoPlacedTiles()
-			if event.key == pygame.K_RETURN:
-				finalizePlacedTiles()
+	playAtRandom()
+	executions += 1
+	if executions % 100 == 0:
+		print executions
+		pygame.display.flip()
 
 
-	pygame.display.flip()
-	clock.tick(60)
+	# for event in pygame.event.get():
+	# 	if event.type == pygame.QUIT:
+	# 		done = True
+	# 	if event.type == pygame.MOUSEBUTTONUP:
+	# 		if selectedTile != '':
+	# 			placeTile(getCoordinate(pygame.mouse.get_pos()), selectedTile)
+	# 		selectedTile = selectTile(getCoordinate(pygame.mouse.get_pos()))
+
+	# 	if event.type == pygame.KEYUP:
+	# 		if event.key == pygame.K_ESCAPE:
+	# 			undoPlacedTiles()
+	# 		if event.key == pygame.K_RETURN:
+	# 			finalizePlacedTiles()
+
+
+	# pygame.display.flip()
+	# clock.tick(240)
