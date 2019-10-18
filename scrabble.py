@@ -343,7 +343,7 @@ def calculateScore(head, linearity):
 			return 10
 
 	wordScore = 0
-	wordMod = 1
+	wordMod = 0
 	wordSize = 0
 	#linearity 1 = l/r, 0 = u/d
 	if linearity:
@@ -357,6 +357,8 @@ def calculateScore(head, linearity):
 			wordSize += 1
 			head[0] += 1
 		if wordSize > 1:
+			if wordMod ==0:
+				wordMod = 1
 			return wordScore * wordMod
 	else:
 		while tiles[head[0]][head[1]][3] != None:
@@ -369,6 +371,8 @@ def calculateScore(head, linearity):
 			wordSize += 1
 			head[1] += 1
 		if wordSize > 1:
+			if wordMod ==0:
+				wordMod = 1
 			return wordScore * wordMod
 		
 
