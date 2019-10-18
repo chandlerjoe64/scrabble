@@ -4,8 +4,6 @@ import random
 from copy import deepcopy
 
 #TODOS
-#checking for play validity before finalizing turn
-#calculating points of turns
 #implement blank tiles
 #handle empty letter bag on player tile draws
 #add text for multiplier squares
@@ -16,7 +14,6 @@ from copy import deepcopy
 #descriptive messages on invalid plays
 #display turn and total scores
 #change tile modifiers after a successful play
-#single tile play invalid on first turn
 #implement logging feature for plays/failures
 
 
@@ -331,6 +328,11 @@ def checkValidity():
 	if tiles[7][7][4] and not includesLocked:
 		undoPlacedTiles()
 		return False 
+
+	#check for single letter words
+	if not len(words) > 0:
+		undoPlacedTiles()
+		return False
 
 	#print all words from play
 	if not checkDictionary(words):
